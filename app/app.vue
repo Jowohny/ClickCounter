@@ -6,12 +6,8 @@ let socket: WebSocket | null = null;
 
 
 onMounted(() => {
-  //asspulled this also, didn't feel like switching the url back and forth
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const url = `${protocol}//${window.location.host}`;
-
   // Establish the WebSocket connection.
-  socket = new WebSocket(url);
+  socket = new WebSocket('https://click-counter-green.vercel.app');
 
   socket.onopen = () => console.log('WebSocket connection established.');
   
