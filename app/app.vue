@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 
 const count = ref(0);
+const viewerCount = ref(0);
 let socket: WebSocket | null = null;
 
 
@@ -20,6 +21,7 @@ onMounted(() => {
     //parses numerical data from the server everytime a click is registered and updates the reference to the count, in turn updates the count in the template
     const data = JSON.parse(event.data);
     count.value = data.count;
+    viewerCount.value = data.viewerCount
   };
   
   //just closes the connection
@@ -37,6 +39,7 @@ const handleIncrement = () => {
 
 <template>
   <div class="min-h-screen min-w-screen flex justify-center items-center flex-col bg-slate-900">
+    <h1 class="absolute top-0 left-0 text-4xl text-purple-200 font-thin tracking-wide">Current Viewers: {{ viewerCount }}</h1>
     <h1 class="text-white text-8xl font-thin">Global Clicks</h1>
     <p class="text-white text-9xl font-bold m-40">{{ count }}</p>
     <button class="px-8 py-4 bg-emerald-300 rounded-xl text-5xl text-semibold" @click="handleIncrement">Click Me!</button>

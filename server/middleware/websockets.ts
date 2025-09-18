@@ -8,6 +8,7 @@ declare global {
 }
 
 let count = 0;
+let viewerCount = 0
 
 //goes through every request/event that goes through the server, in this case everytime a click is registered
 export default defineEventHandler((event: H3Event) => {
@@ -26,21 +27,33 @@ export default defineEventHandler((event: H3Event) => {
         //creates a new server and sets it to the global variable
         globalThis.wss = new WebSocketServer({ server })
 
+
+        //when someone connects or is already in the server, this function send the current viewer count to the user
+        const incrementViewerCount = () => {
+            globalThis.wss?.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({ count, viewerCount }))
+                }
+            });
+        }
+
         //used to initially to connect the user to the server
         globalThis.wss.on('connection', (ws: WebSocket) => {
             console.log('[WebSocket] Client connected.')
+            viewerCount++;
+            incrementViewerCount();
 
             //when someone connects or is already in the server, this function send the current count to the user so they're up-to-date
             const broadcastCount = () => {
                 globalThis.wss?.clients.forEach((client) => {
                     if (client.readyState === WebSocket.OPEN) {
-                        client.send(JSON.stringify({ count }))
+                        client.send(JSON.stringify({ count, viewerCount }))
                     }
                 });
             };
 
             //sends the initial count when connected 
-            ws.send(JSON.stringify({ count }));
+            ws.send(JSON.stringify({ count,viewerCount }));
 
             /*in the vue file where the frontend is, we send an action to this server called increment, as as you would guess,
             it increments the global count variable located on this server and calls broadcastCount() so it updates the number*/
@@ -59,6 +72,8 @@ export default defineEventHandler((event: H3Event) => {
             //literally just sends a message if someone closes their tab or something
             ws.on('close', () => {
                 console.log('[WebSocket] Client disconnected.');
+                viewerCount--;
+                incrementViewerCount();
             });
         });
         console.log('[WebSocket] Server is running.');
